@@ -1,0 +1,11 @@
+{
+  "connections": [
+    {"platform":"LinkedIn","priority":"Wave 1","status":"Access Confirmed","mode":"Company Page","owner":"Keith Frey","review":"Pulse + Sentinel","supports":["Posts","Images","Video","Analytics"],"requirements":["Super Admin access confirmed","Public Page URL confirmed"],"notes":"LinkedIn is the first social priority."},
+    {"platform":"YouTube","priority":"Wave 1","status":"Access Confirmed","mode":"Brand Channel","owner":"Keith Frey","review":"Studio + Northstar","supports":["Long-form video","Shorts","Playlists","Analytics"],"requirements":["Owner access confirmed","Channel handle confirmed"],"notes":"Channel: @LogoLightStore."}
+  ],
+  "presence": [
+    {"platform":"Google Search Console","priority":"Core","status":"Verified","owner":"Watchtower","tasks":["Monitor indexing","Track queries","Track landing pages"],"notes":"URL-prefix property verified."},
+    {"platform":"Bing Webmaster Tools","priority":"Core","status":"Verified","owner":"Watchtower","tasks":["Monitor indexing","Track backlinks","Review Site Scan"],"notes":"Property and sitemap confirmed."}
+  ],
+  "social": []
+}
