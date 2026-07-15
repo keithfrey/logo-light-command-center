@@ -1,0 +1,45 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Logo Light Command Center</title>
+<style>
+body{margin:0;font-family:Arial,sans-serif;background:#101722;color:#eef3f8}
+header{padding:20px 28px;background:#17212d;display:flex;justify-content:space-between;align-items:center}
+h1{margin:0;font-size:24px}.tag{color:#d9a62e;font-weight:700}
+main{padding:24px;max-width:1400px;margin:auto}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px}
+.card{background:#1d2937;border:1px solid #334155;border-radius:10px;padding:16px}
+.card h3{margin:0 0 8px}.status{font-weight:700}.Running{color:#4ade80}.Queued{color:#facc15}.Waiting{color:#fb923c}
+section{margin-top:24px}table{width:100%;border-collapse:collapse;background:#1d2937}
+th,td{padding:10px;border-bottom:1px solid #334155;text-align:left;font-size:14px}
+th{color:#d9a62e}.muted{color:#9fb0c3;font-size:13px}
+.badge{display:inline-block;padding:4px 8px;border-radius:999px;background:#263547}
+#changed{display:none;background:#b91c1c;color:white;padding:8px 12px;border-radius:7px}
+</style>
+</head>
+<body>
+<header><div><h1>Logo Light Command Center</h1><div class="muted">Live local agent runtime v0.1</div></div>
+<div><span id="changed">Dashboard changed</span> <span class="tag">● LIVE</span></div></header>
+<main>
+<div class="muted">Last refreshed: <span id="updated">Loading…</span></div>
+<section><h2>Agent Status</h2><div id="agents" class="grid"></div></section>
+<section><h2>Recent Agent Runs</h2><table><thead><tr><th>Agent</th><th>Task</th><th>Status</th><th>Result</th><th>Time</th></tr></thead><tbody id="runs"></tbody></table></section>
+<section><h2>System Activity</h2><table><thead><tr><th>Event</th><th>Message</th><th>Time</th></tr></thead><tbody id="events"></tbody></table></section>
+</main>
+<script>
+let signature="";
+async function load(){
+ const r=await fetch('/api/status',{cache:'no-store'}); const d=await r.json();
+ document.getElementById('updated').textContent=new Date(d.updated_at).toLocaleString();
+ document.getElementById('agents').innerHTML=d.agents.map(a=>`<div class="card"><h3>${a.name}</h3><div class="status ${a.status}">${a.status}</div><p>${a.current_task}</p></div>`).join('');
+ document.getElementById('runs').innerHTML=d.runs.map(x=>`<tr><td>${x.agent}</td><td>${x.task}</td><td><span class="badge">${x.status}</span></td><td>${x.result||''}</td><td>${new Date(x.created_at).toLocaleString()}</td></tr>`).join('');
+ document.getElementById('events').innerHTML=d.events.map(x=>`<tr><td>${x.type}</td><td>${x.message}</td><td>${new Date(x.created_at).toLocaleString()}</td></tr>`).join('');
+ const next=JSON.stringify([d.runs,d.events]);
+ if(signature && signature!==next){const b=document.getElementById('changed');b.style.display='inline-block';setTimeout(()=>b.style.display='none',10000)}
+ signature=next;
+}
+load(); setInterval(load,15000);
+</script>
+</body></html>

@@ -1,0 +1,76 @@
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: commandcenter
+      POSTGRES_USER: commandcenter
+      POSTGRES_PASSWORD: commandcenter_local_only
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U commandcenter -d commandcenter"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  redis:
+    image: redis:7-alpine
+    command: redis-server --appendonly yes
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  dashboard:
+    build:
+      context: .
+      dockerfile: app/Dockerfile
+    environment:
+      DATABASE_URL: postgresql://commandcenter:commandcenter_local_only@db:5432/commandcenter
+      REDIS_URL: redis://redis:6379/0
+    ports:
+      - "3000:8000"
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    restart: unless-stopped
+
+  worker:
+    build:
+      context: .
+      dockerfile: worker/Dockerfile
+    command: python worker/runner.py
+    environment:
+      DATABASE_URL: postgresql://commandcenter:commandcenter_local_only@db:5432/commandcenter
+      REDIS_URL: redis://redis:6379/0
+      LOGO_LIGHT_URL: https://logolightstore.com/
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    restart: unless-stopped
+
+  scheduler:
+    build:
+      context: .
+      dockerfile: worker/Dockerfile
+    command: python worker/scheduler.py
+    environment:
+      DATABASE_URL: postgresql://commandcenter:commandcenter_local_only@db:5432/commandcenter
+      REDIS_URL: redis://redis:6379/0
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
+  redis_data:
